@@ -63,7 +63,7 @@ public partial class App : Application
         watchdog.Start();
         var store = AppHost.Get<UserDataStore>();
         if (Program.PreloadedStore is null)
-            store.Load();
+            store.Load(OperatingSystem.IsMacOS());
 
         var loc = AppHost.Get<LocalizationService>();
         loc.Attach(this);

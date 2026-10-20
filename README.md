@@ -9,16 +9,16 @@
 
 <p align="center">
   <a href="https://filee.sh"><b>Website</b></a> ·
-  <a href="https://github.com/KnifeLemon/Filee/releases/latest"><b>Download</b></a> ·
+  <a href="https://github.com/Qinov5/Filee/releases/latest"><b>Download</b></a> ·
   <a href="#install">Install</a> ·
   <a href="#command-line">Command line</a> ·
   <a href="#development">Development</a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/KnifeLemon/Filee/actions/workflows/ci.yml"><img src="https://github.com/KnifeLemon/Filee/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/KnifeLemon/Filee/releases/latest"><img src="https://img.shields.io/github/v/release/KnifeLemon/Filee?color=7F77DD&label=release" alt="Latest release"></a>
-  <a href="https://github.com/KnifeLemon/Filee/releases"><img src="https://img.shields.io/github/downloads/KnifeLemon/Filee/total?color=1D9E75" alt="Downloads"></a>
+  <a href="https://github.com/Qinov5/Filee/actions/workflows/ci.yml"><img src="https://github.com/Qinov5/Filee/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/Qinov5/Filee/releases/latest"><img src="https://img.shields.io/github/v/release/Qinov5/Filee?color=7F77DD&label=release" alt="Latest release"></a>
+  <a href="https://github.com/Qinov5/Filee/releases"><img src="https://img.shields.io/github/downloads/Qinov5/Filee/total?color=1D9E75" alt="Downloads"></a>
   <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-3C3489" alt="Windows 10 | 11">
   <img src="https://img.shields.io/badge/macOS%20%7C%20Linux-preview-534AB7" alt="macOS | Linux preview">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-6A62C9" alt="MIT license"></a>
@@ -48,7 +48,7 @@
 
 ## Install
 
-Download from [Releases](https://github.com/KnifeLemon/Filee/releases/latest).
+Download from [Releases](https://github.com/Qinov5/Filee/releases/latest).
 
 - **Windows 10/11**: run `Filee-<version>-win-Setup.exe`, or unzip the `win-Portable.zip` and run `Filee.exe`.
   Setup can add the Explorer menu, start at sign-in, the `filee` command and optional engines.
@@ -58,6 +58,26 @@ Download from [Releases](https://github.com/KnifeLemon/Filee/releases/latest).
   Drag gestures need X11. On Wayland, use the drop zone and the file manager's right-click menu.
 
 Filee shows new releases in its menu and updates itself, keeping your settings and engines.
+
+### macOS menu bar build in this fork
+
+This fork uses the independent bundle identifier `com.qinov5.filee`. A fresh macOS install starts without a Dock
+icon, shows the Filee menu-bar icon, and closes the main window to the background. Use the menu-bar icon to open
+Filee, pause or resume shortcuts, open Settings, or quit. Its settings and downloaded engines live in
+`~/Library/Application Support/Filee-Qinov5`, separate from upstream Filee.
+
+Build a signed Apple Silicon package with the .NET 10 SDK and PowerShell 7:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+pwsh build/fetch-fonts.ps1
+pwsh build/build-portable.ps1 -Runtime osx-arm64 -Version 1.12.0-qinov5.1 \
+  -SigningIdentity 'Apple Development: hyyquasar@gmail.com (8USY4MR6JL)'
+```
+
+The script signs the app at the end and verifies the signature. Extract the resulting `Releases/Filee-1.12.0-qinov5.1-osx-arm64.tar.gz`,
+then run `./install.sh` from the extracted package to install at `~/Applications/Filee.app`. Development signing is not notarization;
+macOS may ask you to allow the first launch in Privacy & Security.
 
 ## Features
 
@@ -130,7 +150,7 @@ Every command and option: [filee.sh/cli](https://filee.sh/cli/) or `filee help`.
 Build with the .NET 10 SDK on Windows, macOS or Linux:
 
 ```bash
-git clone https://github.com/KnifeLemon/Filee.git
+git clone https://github.com/Qinov5/Filee.git
 cd Filee
 pwsh build/fetch-engines.ps1 -Only rhwp,pandoc   # optional engines
 dotnet run --project src/Filee.App
@@ -187,5 +207,5 @@ Filee's About page. One-time supporters can ask to be listed too.
 MIT, © 2026 Myeonggu Kim (KnifeLemon) and Filee contributors. Bundled third-party components keep their own licenses, listed in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
 <p align="center">
-  <a href="https://star-history.com/#KnifeLemon/Filee&Date"><img src="https://api.star-history.com/svg?repos=KnifeLemon/Filee&type=Date" alt="Star history" width="600"></a>
+  <a href="https://star-history.com/#Qinov5/Filee&Date"><img src="https://api.star-history.com/svg?repos=Qinov5/Filee&type=Date" alt="Star history" width="600"></a>
 </p>

@@ -31,6 +31,11 @@ public sealed class TrayServiceTests
                 service.Create(app);
                 var icon = Assert.Single(TrayIcon.GetIcons(app)!);
                 Assert.False(icon.IsVisible);
+                var items = icon.Menu!.Items.OfType<NativeMenuItem>().Select(item => item.Header).ToArray();
+                Assert.Contains(AppHost.Get<ILocalizer>()["tray.open"], items);
+                Assert.Contains(AppHost.Get<ILocalizer>()["tray.settings"], items);
+                Assert.Contains(AppHost.Get<ILocalizer>()["tray.pause"], items);
+                Assert.Contains(AppHost.Get<ILocalizer>()["tray.quit"], items);
 
                 store.Settings.ShowMenuBarIcon = true;
                 store.SaveSettings();

@@ -102,7 +102,7 @@ internal static class Program
             if (OperatingSystem.IsMacOS())
             {
                 PreloadedStore = new UserDataStore(UserDataStore.DefaultDirectory, earlyStoreLogger);
-                PreloadedStore.Load();
+                PreloadedStore.Load(OperatingSystem.IsMacOS());
             }
             return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, ShutdownMode.OnExplicitShutdown);
         }
@@ -276,7 +276,7 @@ internal static class Program
     {
         var builder = AppBuilder.Configure<App>().UsePlatformDetect();
         if (OperatingSystem.IsMacOS())
-            builder = builder.With(new MacOSPlatformOptions { ShowInDock = PreloadedStore?.Settings.ShowInDock ?? true });
+            builder = builder.With(new MacOSPlatformOptions { ShowInDock = PreloadedStore?.Settings.ShowInDock ?? false });
         return builder
             .ConfigureFonts(fonts => fonts.AddFontCollection(new FileeFontCollection()))
 #if DEBUG

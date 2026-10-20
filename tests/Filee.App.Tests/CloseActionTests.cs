@@ -70,6 +70,24 @@ public class CloseActionTests
         }
     }
 
+    [Fact]
+    public void Fresh_macos_settings_use_the_menu_bar_defaults()
+    {
+        var directory = Directory.CreateTempSubdirectory("filee-macos-defaults-").FullName;
+        try
+        {
+            var store = new UserDataStore(directory);
+            store.Load(macOSMenuBarDefaults: true);
+            Assert.Equal(CloseAction.Tray, store.Settings.CloseAction);
+            Assert.False(store.Settings.ShowInDock);
+            Assert.True(store.Settings.ShowMenuBarIcon);
+        }
+        finally
+        {
+            Directory.Delete(directory, true);
+        }
+    }
+
     [AvaloniaFact]
     public void Ask_with_dont_ask_again_saves_the_answer_and_the_general_page_follows()
     {
@@ -161,6 +179,8 @@ public class CloseActionTests
             var store = new UserDataStore(directory);
             store.Load();
             store.Settings.CloseAction = CloseAction.Quit;
+            store.Settings.ShowInDock = true;
+            store.Settings.ShowMenuBarIcon = true;
             store.SaveSettings();
             var platform = new IconPlatform { SupportsDockVisibility = true };
             using var page = new GeneralPageViewModel(store, AppHost.Get<ILocalizer>(), platform,

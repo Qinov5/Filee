@@ -14,13 +14,15 @@ public sealed class TrayService(UserDataStore store, ILocalizer loc, IPlatformSe
     UpdateService updates)
 {
     private TrayIcon? _tray;
-    private NativeMenuItem? _open, _pause, _quit, _update;
+    private NativeMenuItem? _open, _settings, _pause, _quit, _update;
 
     public void Create(Application app)
     {
         using var iconStream = AssetLoader.Open(new Uri("avares://Filee/Assets/Icons/filee.ico"));
         _open = new NativeMenuItem();
         _open.Click += (_, _) => windows.ShowMain();
+        _settings = new NativeMenuItem();
+        _settings.Click += (_, _) => windows.ShowMain("general");
         _pause = new NativeMenuItem();
         _pause.Click += (_, _) =>
         {
@@ -37,7 +39,7 @@ public sealed class TrayService(UserDataStore store, ILocalizer loc, IPlatformSe
             Icon = new WindowIcon(iconStream),
             // Set before the icon is attached: on macOS Avalonia passes the tooltip to native code, which can't take null.
             ToolTipText = "Filee",
-            Menu = new NativeMenu { Items = { _open, _pause, new NativeMenuItemSeparator(), _quit } },
+            Menu = new NativeMenu { Items = { _open, _settings, _pause, new NativeMenuItemSeparator(), _quit } },
             IsVisible = platform.SupportsDockVisibility ? store.Settings.ShowMenuBarIcon : true,
         };
         _tray.Clicked += (_, _) => windows.ShowMain();
@@ -72,6 +74,7 @@ public sealed class TrayService(UserDataStore store, ILocalizer loc, IPlatformSe
             menu.Items.Remove(_update!);
         }
         _open!.Header = loc["tray.open"];
+        _settings!.Header = loc["tray.settings"];
         _pause!.Header = store.Settings.Paused ? loc["tray.resume"] : loc["tray.pause"];
         _quit!.Header = loc["tray.quit"];
         var drag = store.Settings.Triggers.FirstOrDefault(t => t.Enabled && t.Kind == TriggerKind.Drag);

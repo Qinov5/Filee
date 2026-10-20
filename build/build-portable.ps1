@@ -51,7 +51,7 @@ $sums = Join-Path $OutputDir "$packageName-SHA256SUMS.txt"
 if ((Test-Path -LiteralPath $archive) -or (Test-Path -LiteralPath $sums)) {
     throw "Package $packageName already exists. Use another output folder or version."
 }
-$stage = Join-Path $root ('build/.cache/portable/' + [Guid]::NewGuid().ToString('N'))
+$stage = Join-Path ([System.IO.Path]::GetTempPath()) ('filee-portable-' + [Guid]::NewGuid().ToString('N'))
 $package = Join-Path $stage $packageName
 $appBundle = Join-Path $package 'Filee.app'
 $publish = if ($Runtime.StartsWith('osx-')) { Join-Path $appBundle 'Contents/MacOS' } else { $package }
@@ -114,16 +114,33 @@ if ($Runtime.StartsWith('osx-')) {
     foreach ($localization in Get-ChildItem -LiteralPath (Join-Path $root 'installer/macos') -Directory -Filter '*.lproj') {
         Copy-Item -LiteralPath $localization.FullName -Destination $resources -Recurse
     }
+    # A provenance extended attribute on a published Mach-O binary makes codesign reject it as a resource fork.
+    Invoke-Checked 'Clear extended attributes' { xattr -cr $appBundle }
+    # XML documentation is not used at runtime and codesign treats XML files placed beside the apphost as nested
+    # code when sealing the bundle. Keep the app bundle limited to runtime files.
+    Get-ChildItem -LiteralPath $publish -Recurse -File -Filter '*.xml' | Remove-Item -Force
+    # 7-Zip's HTML manual is documentation only and is also mistaken for nested code by the bundle sealer.
+    Remove-Item -LiteralPath (Join-Path $publish 'engines/7zip/MANUAL') -Recurse -Force -ErrorAction SilentlyContinue
     $entitlements = Join-Path $root 'installer/macos/entitlements.plist'
     $signOptions = @('--force', '--sign', $SigningIdentity)
-    if ($SigningIdentity -ne '-') { $signOptions += @('--timestamp', '--options', 'runtime') }
-    # Every file in Contents/MacOS is code to codesign, the .NET assemblies too (their signature goes into extended
-    # attributes): signing the main executable checks all of them. Deepest paths first, the main executable last.
+    if ($SigningIdentity -ne '-') { $signOptions += @('--options', 'runtime') }
+    $assemblySignOptions = @('--force', '--sign', $SigningIdentity)
+    # Sign native Mach-O code and .NET assemblies in Contents/MacOS. Data files such as 7-Zip's manuals are resources,
+    # not code, and should not receive standalone signatures or entitlements.
     $mainExecutable = Join-Path $publish 'Filee'
-    $files = Get-ChildItem -LiteralPath $publish -Recurse -File | Where-Object { $_.FullName -ne $mainExecutable } |
-        Sort-Object { $_.FullName.Length } -Descending
+    $files = Get-ChildItem -LiteralPath $publish -Recurse -File | Where-Object { $_.FullName -ne $mainExecutable }
     foreach ($file in $files) {
-        Invoke-Checked "Sign $($file.Name)" { codesign @signOptions --entitlements $entitlements $file.FullName }
+        $fileKind = & file -b $file.FullName
+        if ($LASTEXITCODE -ne 0) { throw "Could not inspect $($file.FullName)" }
+        if ($fileKind -match 'Mach-O') {
+            Invoke-Checked "Sign $($file.Name)" { codesign @signOptions $file.FullName }
+        }
+        else {
+            # The macOS bundle sealer treats files beside the apphost as nested code, including managed assemblies,
+            # runtime manifests, and engine notices. Sign these without a timestamp; reserve hardened runtime and
+            # timestamping for native Mach-O executables and libraries.
+            Invoke-Checked "Sign $($file.Name)" { codesign @assemblySignOptions $file.FullName }
+        }
     }
     Invoke-Checked 'Sign main executable' { codesign @signOptions --entitlements $entitlements $mainExecutable }
     Invoke-Checked 'Sign app bundle' { codesign @signOptions --entitlements $entitlements $appBundle }

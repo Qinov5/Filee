@@ -4,7 +4,7 @@
 <dict>
     <key>CFBundleDevelopmentRegion</key><string>en</string>
     <key>CFBundleLocalizations</key><array><string>en</string><string>ko</string><string>zh-Hans</string></array>
-    <key>CFBundleIdentifier</key><string>com.filee.app</string>
+    <key>CFBundleIdentifier</key><string>com.qinov5.filee</string>
     <key>CFBundleName</key><string>Filee</string>
     <key>CFBundleDisplayName</key><string>Filee</string>
     <key>CFBundleExecutable</key><string>Filee</string>
@@ -22,7 +22,7 @@
         <dict>
             <key>NSMenuItem</key><dict><key>default</key><string>Convert with Filee</string></dict>
             <key>NSMessage</key><string>convertFiles</string>
-            <key>NSPortName</key><string>Filee</string>
+            <key>NSPortName</key><string>Filee-Qinov5</string>
             <key>NSRequiredContext</key><dict/>
             <key>NSSendFileTypes</key><array><string>public.item</string></array>
         </dict>

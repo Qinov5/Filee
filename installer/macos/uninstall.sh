@@ -13,7 +13,7 @@ if [ "$resolved_app" != "$resolved_parent/Filee.app" ]; then
     exit 1
 fi
 bundle_id=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$install_dir/Contents/Info.plist")
-if [ "$bundle_id" != 'com.filee.app' ]; then
+if [ "$bundle_id" != 'com.qinov5.filee' ]; then
     printf '%s\n' 'The bundle is not Filee.'
     exit 1
 fi

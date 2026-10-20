@@ -36,11 +36,12 @@ public sealed class UserDataStore
     public static string? OverrideDirectory => DirectoryFrom(Environment.GetEnvironmentVariable(DirectoryVariable));
 
     /// <summary>
-    /// Default data directory: %APPDATA%\Filee on Windows, ~/Library/Application Support/Filee on macOS, or the
+    /// Default data directory: %APPDATA%\Filee on Windows, ~/Library/Application Support/Filee-Qinov5 on macOS, or the
     /// folder in <see cref="DirectoryVariable"/>.
     /// </summary>
     public static string DefaultDirectory =>
-        OverrideDirectory ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Filee");
+        OverrideDirectory ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            OperatingSystem.IsMacOS() ? "Filee-Qinov5" : "Filee");
 
     internal static string? DirectoryFrom(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : Path.TrimEndingDirectorySeparator(Path.GetFullPath(value.Trim()));
@@ -67,10 +68,20 @@ public sealed class UserDataStore
     private string HistoryPath => Path.Combine(Directory, "history.json");
 
     /// <summary>Loads everything from disk, falling back to defaults for missing or corrupt files.</summary>
-    public void Load()
+    /// <param name="macOSMenuBarDefaults">Use the fork's fresh-profile menu-bar defaults when settings.json is absent.</param>
+    public void Load(bool macOSMenuBarDefaults = false)
     {
         System.IO.Directory.CreateDirectory(Directory);
+        var hasSettings = File.Exists(SettingsPath);
         Settings = Read(SettingsPath, FileeJsonContext.Default.AppSettings) ?? new AppSettings();
+        // The macOS fork is designed to live in the menu bar. Keep the original defaults on other platforms and
+        // respect existing user choices; only a genuinely fresh macOS profile gets the menu-bar behavior.
+        if (!hasSettings && macOSMenuBarDefaults)
+        {
+            Settings.CloseAction = CloseAction.Tray;
+            Settings.ShowInDock = false;
+            Settings.ShowMenuBarIcon = true;
+        }
         Presets = Read(PresetsPath, FileeJsonContext.Default.ListPreset) ?? BuiltInData.CreatePresets();
         Profiles = Read(ProfilesPath, FileeJsonContext.Default.ListToolbarProfile) ?? BuiltInData.CreateProfiles();
         History = Read(HistoryPath, FileeJsonContext.Default.ListHistoryEntry) ?? [];

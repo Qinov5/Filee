@@ -1,6 +1,6 @@
 // "Convert with Filee" in Finder's right-click menu, as a service Filee.app provides itself (NSServices in its
 // Info.plist). macOS hands the selected files straight to the running Filee: no Automator workflow, no shell, no
-// second process. Info.plist names the message (convertFiles) and the port (Filee); this registers the object
+// second process. Info.plist names the message (convertFiles) and the fork-specific port; this registers the object
 // that answers it, an NSObject subclass made at run time with one method, convertFiles:userData:error:.
 
 using System.Runtime.InteropServices;
@@ -15,6 +15,9 @@ public static class MacOSServicesProvider
 
     /// <summary>The selector macOS sends, without its argument labels (NSMessage in Info.plist).</summary>
     public const string Message = "convertFiles";
+
+    /// <summary>Private AppKit service port, unique from the upstream app's service registration.</summary>
+    public const string ServicePort = "Filee-Qinov5";
 
     private const string ObjC = "/usr/lib/libobjc.dylib";
     private const string AppKit = "/System/Library/Frameworks/AppKit.framework/AppKit";
