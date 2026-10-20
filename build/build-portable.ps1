@@ -122,6 +122,7 @@ if ($Runtime.StartsWith('osx-')) {
     # 7-Zip's HTML manual is documentation only and is also mistaken for nested code by the bundle sealer.
     Remove-Item -LiteralPath (Join-Path $publish 'engines/7zip/MANUAL') -Recurse -Force -ErrorAction SilentlyContinue
     $entitlements = Join-Path $root 'installer/macos/entitlements.plist'
+    $cliEntitlements = Join-Path $root 'installer/macos/cli-entitlements.plist'
     $signOptions = @('--force', '--sign', $SigningIdentity)
     if ($SigningIdentity -ne '-') { $signOptions += @('--options', 'runtime') }
     $assemblySignOptions = @('--force', '--sign', $SigningIdentity)
@@ -133,7 +134,13 @@ if ($Runtime.StartsWith('osx-')) {
         $fileKind = & file -b $file.FullName
         if ($LASTEXITCODE -ne 0) { throw "Could not inspect $($file.FullName)" }
         if ($fileKind -match 'Mach-O') {
-            Invoke-Checked "Sign $($file.Name)" { codesign @signOptions $file.FullName }
+            if ($file.Name -eq 'filee-cli') {
+                # The self-contained .NET CLI needs JIT permission under the hardened runtime.
+                Invoke-Checked "Sign $($file.Name)" { codesign @signOptions --entitlements $cliEntitlements $file.FullName }
+            }
+            else {
+                Invoke-Checked "Sign $($file.Name)" { codesign @signOptions $file.FullName }
+            }
         }
         else {
             # The macOS bundle sealer treats files beside the apphost as nested code, including managed assemblies,

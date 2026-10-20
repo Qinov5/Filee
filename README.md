@@ -71,11 +71,11 @@ Build a signed Apple Silicon package with the .NET 10 SDK and PowerShell 7:
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
 pwsh build/fetch-fonts.ps1
-pwsh build/build-portable.ps1 -Runtime osx-arm64 -Version 1.12.0-qinov5.1 \
+pwsh build/build-portable.ps1 -Runtime osx-arm64 -Version 1.12.0-qinov5.2 \
   -SigningIdentity 'Apple Development: hyyquasar@gmail.com (8USY4MR6JL)'
 ```
 
-The script signs the app at the end and verifies the signature. Extract the resulting `Releases/Filee-1.12.0-qinov5.1-osx-arm64.tar.gz`,
+The script signs the app and CLI at the end and verifies the app signature. Extract the resulting `Releases/Filee-1.12.0-qinov5.2-osx-arm64.tar.gz`,
 then run `./install.sh` from the extracted package to install at `~/Applications/Filee.app`. Development signing is not notarization;
 macOS may ask you to allow the first launch in Privacy & Security.
 
